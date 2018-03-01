@@ -1,0 +1,18 @@
+#myVideo {
+    background-color: #3273DC;
+    margin: 0 auto;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+h1 {
+    padding: 25px 0 15px;
+}
+
+#formContact {
+    width: 640px;
+    margin: 0 auto;
+    padding: 20px 0;
+}

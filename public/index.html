@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Video-only Example - Record Plugin for Video.js</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="../node_modules/bulma/css/bulma.css" rel="stylesheet">
+    <link href="../node_modules/video.js/dist/video-js.min.css" rel="stylesheet">
+    <link href="../node_modules/videojs-record/dist/css/videojs.record.min.css" rel="stylesheet">
+
+    <link href="css/style.css" rel="stylesheet">
+
+    <script defer src="https://use.fontawesome.com/releases/v5.0.0/js/all.js"></script>
+    <script src="../node_modules/video.js/dist/video.min.js"></script>
+    <script src="../node_modules/recordrtc/RecordRTC.js"></script>
+    <script src="../node_modules/webrtc-adapter/out/adapter.js"></script>
+    <script src="../node_modules/videojs-record/dist/videojs.record.js"></script>
+
+    <script src="js/smtp.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="title">Comunicação Assistiva</h1>
+    <h2 class="subtitle">Clique na camera para iniciar a gravaçao</h2>
+
+    <video id="myVideo" class="video-js vjs-default-skin"></video>
+
+    <form id="formContact" novalidate>
+        <div class="field">
+            <label class="label">Seu Nome</label>
+            <div class="control">
+                <input class="input" id="formName" type="text" placeholder="Digite seu nome" required>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Seu Email</label>
+            <div class="control has-icons-left">
+                <input class="input" id="formEmail" type="email" placeholder="Digite seu Email" required>
+                <span class="icon is-small is-left">
+                  <i class="fas fa-envelope"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button type="submit" id="formSubmitButton" disabled class="button is-link">Enviar Mensagem</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+  let videoPath = ''
+  let player = videojs("myVideo", {
+    controls: true,
+    width: 640,
+    height: 380,
+    fluid: false,
+    controlBar: {
+      volumePanel: false
+    },
+    plugins: {
+      record: {
+        audio: false,
+        video: true,
+        maxLength: 30,
+        debug: true
+      }
+    }
+  }, function () {
+    videojs.log('Using video.js', videojs.VERSION,
+      'with videojs-record', videojs.getPluginVersion('record'),
+      'and recordrtc', RecordRTC.version)
+  })
+  player.on('deviceError', function () {
+    console.warn('device error:', player.deviceErrorCode)
+  })
+  player.on('error', function (error) {
+    console.log('error:', error)
+  })
+  player.on('startRecord', function () {
+    console.log('started recording!')
+  })
+  player.on('finishRecord', function () {
+    console.log('finished recording: ', player.recordedData)
+    document.querySelector('#formSubmitButton').removeAttribute('disabled')
+    let time = new Date().getTime()
+    let videoName = 'my-video-' + time + '.mp4'
+    videoPath = videoName
+    player.record().saveAs({'video': videoName})
+  })
+  window.onload = function (ev) {
+    let $formName = document.querySelector('#formName')
+    let $formEmail = document.querySelector('#formEmail')
+    document.querySelector('#formContact').addEventListener('submit', function (event) {
+      event.preventDefault()
+      if ($formName.value.length === 0) {
+        alert('Preencha o seu nome')
+        $formName.focus()
+        return false
+      }
+      if ($formEmail.value.length === 0) {
+        alert('Preencha o seu email')
+        $formEmail.focus()
+        return false
+      }
+      sendEmail($formEmail.value)
+    }, false)
+  }
+
+  function sendEmail (email) {
+    let request = new XMLHttpRequest()
+    let data = new FormData()
+    request.open('POST', 'URL_API')
+    data.append('from', 'EMAIL')
+    data.append('to', email)
+    data.append('subject', 'Comunicação Assistiva em Websites')
+    data.append('message', 'Comunicação Assistiva em Websites')
+    request.onreadystatechange = function () {
+      if (request.readyState == 4 && request.status == 200) {
+        console.log(request.responseText)
+        alert('Mensagem enviada')
+      }
+    }
+    request.send(data)
+  }
+
+</script>
+
+</body>
+</html>
