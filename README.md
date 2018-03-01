@@ -1,1 +1,1 @@
-# comunicacao-assistiva
+# Modelo para comunicação assistiva em Websites
